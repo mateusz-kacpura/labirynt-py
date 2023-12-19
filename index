@@ -1,0 +1,131 @@
+import matplotlib.pyplot as plt
+
+class Stack:
+    def __init__(self):
+        self.items = []
+
+    def is_empty(self):
+        return len(self.items) == 0
+
+    def push(self, item):
+        self.items.append(item)
+
+    def pop_coordinates(self):
+        if not self.is_empty():
+            return self.items.pop()
+        else:
+            raise IndexError("Stack is empty")
+
+    def peek(self):
+        if not self.is_empty():
+            return self.items[-1]
+        else:
+            raise IndexError("Stack is empty")
+
+    def push_coordinates(self, x, y):
+        self.items.append((x, y))
+
+    def check_coordinates(self, x, y):
+        for coord in self.items:
+            if coord == (x, y):
+                return True
+        return False
+    
+    def get_all_elements(self):
+        return self.items
+    
+    def size(self):
+        return len(self.items)
+
+    def __str__(self):
+        return str(self.items)
+    
+
+'''
+is_empty(): Sprawdza, czy stos jest pusty.
+push(item): Dodaje element na wierzch stosu.
+pop():      Usuwa i zwraca element z wierzchu stosu. Jeśli stos jest pusty, podnosi wyjątek IndexError.
+peek():     Zwraca element z wierzchu stosu bez usuwania go. Jeśli stos jest pusty, podnosi wyjątek IndexError.
+size():     Zwraca liczbę elementów na stosie
+push_coordinates(): Dodawanie pary współrzędnych na stos
+get_all_elements(): Zwracanie wszystkich elementów ze stosu
+'''
+
+def check_variable(lab, x, y):
+    # Sprawdź czy x i y mieszczą się w zakresie listy lab
+    if 0 <= x < len(lab) and 0 <= y < len(lab[0]):
+        return True
+    else:
+        return False
+
+def found_way(lab, x, y, way, checked):
+    print(x, y)
+
+    if check_variable(lab, x + 1, y) and lab[x + 1][y] == 0 and not checked.check_coordinates(x + 1, y):
+        way.push_coordinates(x + 1, y)
+        checked.push_coordinates(x + 1, y)
+        found_way(lab, x + 1, y, way, checked)
+    elif check_variable(lab, x, y + 1) and lab[x][y + 1] == 0 and not checked.check_coordinates(x, y + 1):
+        way.push_coordinates(x, y + 1)
+        checked.push_coordinates(x, y + 1)
+        found_way(lab, x, y + 1, way, checked)
+    elif check_variable(lab, x, y - 1) and lab[x][y - 1] == 0 and not checked.check_coordinates(x, y - 1):
+        way.push_coordinates(x, y - 1)
+        checked.push_coordinates(x, y - 1)
+        found_way(lab, x, y - 1, way, checked)
+    elif check_variable(lab, x - 1, y) and lab[x - 1][y] == 0 and not checked.check_coordinates(x - 1, y):
+        way.push_coordinates(x - 1, y)
+        checked.push_coordinates(x - 1, y)
+        found_way(lab, x - 1, y, way, checked)
+    else:
+        way.pop_coordinates()
+
+    # Jeśli żadna droga nie została znaleziona, usuń bieżące współrzędne ze stosu
+    return False
+
+def draw_path(lab, path):
+    maze_image = [[0 if cell == 0 else 1 for cell in row] for row in lab]
+
+    for x, y in path:
+        maze_image[x][y] = 2  # Oznaczenie ścieżki innym numerem
+
+    plt.imshow(maze_image, cmap="viridis", origin="upper")
+    plt.title("Labirynth with Path")
+    plt.show()
+
+lab = [[1, 0, 1, 0, 0, 1, 0, 1],
+       [0, 1, 1, 0, 0, 0, 0, 0],
+       [1, 0, 1, 0, 1, 1, 0, 1],
+       [0, 1, 0, 0, 0, 0, 1, 0],
+       [0, 0, 0, 1, 0, 0, 0, 0],
+       [1, 0, 1, 0, 0, 1, 0, 1],
+       [1, 0, 1, 0, 1, 1, 0, 1],
+       [1, 0, 0, 0, 1, 0, 0, 0],
+       [0, 1, 1, 0, 0, 0, 0, 0]]
+
+
+x,y = 0,4
+start = lab[x][y]
+
+end = lab[8][7]
+
+print("Start:", start)
+print("End:", end)
+
+way_stack = Stack()
+checked_stack = Stack()
+
+way_stack.push_coordinates(x, y)
+checked_stack.push_coordinates(x, y)
+
+found_way(lab, x, y, way_stack, checked_stack)
+
+found_path = []
+found_way(lab, x, y, way_stack, checked_stack)
+while not way_stack.is_empty():
+    found_path.append(way_stack.pop_coordinates())
+
+# Odwrócenie listy, aby zacząć od punktu startowego
+found_path.reverse()
+
+draw_path(lab, found_path)
